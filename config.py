@@ -5,8 +5,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Bot Configuration
-BOT_TOKEN = os.getenv('BOT_TOKEN', 'YOUR_BOT_TOKEN_HERE')
-OWNER_ID = int(os.getenv('OWNER_ID', 'YOUR_TELEGRAM_ID_HERE'))
+BOT_TOKEN = os.getenv('BOT_TOKEN', '8518539584:AAGmEzfHMzZZgsUIY6gk1VQZ-SOP2FFdfe4')
+OWNER_ID = int(os.getenv('OWNER_ID', '8327651421'))
 
 # Admin IDs (comma-separated)
 ADMIN_IDS = list(map(int, os.getenv('ADMIN_IDS', '').split(','))) if os.getenv('ADMIN_IDS') else []
