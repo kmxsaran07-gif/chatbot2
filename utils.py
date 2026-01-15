@@ -1,4 +1,5 @@
 import asyncio
+import os
 from typing import List, Dict, Tuple
 from datetime import datetime
 import pytz
@@ -17,41 +18,52 @@ async def send_broadcast(bot: Bot, message: str, parse_mode: ParseMode = ParseMo
     success = 0
     failed = 0
     
-    # Split users into chunks
-    chunks = [users[i:i + MAX_BROADCAST_CHUNK] for i in range(0, len(users), MAX_BROADCAST_CHUNK)]
+    if not users:
+        return 0, 0
     
-    for chunk in chunks:
+    # Split users into chunks
+    user_chunks = [users[i:i + MAX_BROADCAST_CHUNK] for i in range(0, len(users), MAX_BROADCAST_CHUNK)]
+    
+    for chunk in user_chunks:
         tasks = []
         for user in chunk:
             try:
+                # Skip banned users
+                if user.get('is_banned'):
+                    continue
+                    
                 task = bot.send_message(
                     chat_id=user['user_id'],
                     text=message,
                     parse_mode=parse_mode
                 )
                 tasks.append(task)
-            except:
+            except Exception as e:
                 failed += 1
+                print(f"Failed to create task for user {user.get('user_id', 'unknown')}: {e}")
         
         # Send chunk
-        results = await asyncio.gather(*tasks, return_exceptions=True)
-        
-        # Count results
-        for result in results:
-            if isinstance(result, Exception):
-                failed += 1
-            else:
-                success += 1
+        if tasks:
+            results = await asyncio.gather(*tasks, return_exceptions=True)
+            
+            # Count results
+            for result in results:
+                if isinstance(result, Exception):
+                    failed += 1
+                else:
+                    success += 1
         
         # Delay between chunks
-        await asyncio.sleep(BROADCAST_DELAY)
+        if len(user_chunks) > 1:
+            await asyncio.sleep(BROADCAST_DELAY)
     
     return success, failed
 
 def format_user_info(user_data: Dict, detailed: bool = False) -> str:
     """Format user information for display"""
-    if detailed:
-        info = f"""
+    try:
+        if detailed:
+            info = f"""
 👤 <b>Detailed User Information</b>
 
 <b>Basic Info:</b>
@@ -71,9 +83,9 @@ def format_user_info(user_data: Dict, detailed: bool = False) -> str:
 <b>Statistics:</b>
 ├ Saved Stickers: {len(user_data.get('stickers', []))}
 └ Last Seen: {user_data.get('last_seen', 'N/A')}
-        """
-    else:
-        info = f"""
+            """
+        else:
+            info = f"""
 👤 <b>User Profile</b>
 
 <b>Name:</b> {user_data.get('first_name', 'N/A')} {user_data.get('last_name', '')}
@@ -81,9 +93,13 @@ def format_user_info(user_data: Dict, detailed: bool = False) -> str:
 <b>ID:</b> <code>{user_data.get('user_id', 'N/A')}</code>
 <b>Join Date:</b> {user_data.get('join_date', 'N/A')}
 <b>Saved Stickers:</b> {len(user_data.get('stickers', []))}
-        """
-    
-    return info
+<b>Status:</b> {'🚫 Banned' if user_data.get('is_banned') else '✅ Active'}
+            """
+        
+        return info
+    except Exception as e:
+        print(f"Error formatting user info: {e}")
+        return "Error loading user information."
 
 def parse_time(time_str: str) -> int:
     """Parse time string to seconds"""
@@ -94,6 +110,9 @@ def parse_time(time_str: str) -> int:
         'd': 86400,
         'w': 604800
     }
+    
+    if not time_str:
+        return 0
     
     try:
         unit = time_str[-1].lower()
@@ -123,5 +142,16 @@ def get_current_time():
 
 def create_backup_dir():
     """Create backup directory if not exists"""
-    import os
-    os.makedirs('backups', exist_ok=True)
+    try:
+        os.makedirs('backups', exist_ok=True)
+        return 'backups'
+    except Exception as e:
+        print(f"Error creating backup directory: {e}")
+        return None
+
+def format_number(number: int) -> str:
+    """Format number with commas"""
+    try:
+        return f"{number:,}"
+    except:
+        return str(number)
