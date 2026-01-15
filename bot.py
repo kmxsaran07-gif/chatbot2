@@ -2,6 +2,7 @@ import os
 import logging
 import asyncio
 import sys
+import signal
 from datetime import datetime
 from typing import Dict
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
@@ -36,7 +37,7 @@ from utils import (
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     level=logging.INFO,
-    stream=sys.stdout  # Ensure logs go to stdout for Render
+    stream=sys.stdout
 )
 logger = logging.getLogger(__name__)
 
@@ -44,11 +45,11 @@ class AdvancedTelegramBot:
     def __init__(self):
         self.application = None
         self.bot_start_time = get_current_time()
+        self.is_running = False
         
     async def start(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Handle /start command"""
         user = update.effective_user
-        chat = update.effective_chat
         
         # Add user to database
         user_data = {
@@ -668,8 +669,8 @@ Join Date: Unknown (You're not in database yet!)
         # Error handler
         self.application.add_error_handler(self.error_handler)
     
-    async def run(self):
-        """Start the bot"""
+    async def start_polling(self):
+        """Start the bot with polling"""
         # Initialize database
         init_db()
         create_backup_dir()
@@ -684,31 +685,59 @@ Join Date: Unknown (You're not in database yet!)
         
         # Start bot
         logger.info("Bot is starting...")
-        await self.application.initialize()
-        await self.application.start()
         
         # Get bot info
         bot_info = await self.application.bot.get_me()
         logger.info(f"Bot @{bot_info.username} is running!")
         
         # Start polling
+        await self.application.initialize()
+        await self.application.start()
+        
+        # Start polling manually without updater
         await self.application.updater.start_polling()
         
-        # Keep running
-        await self.application.idle()
+        # Set running flag
+        self.is_running = True
+        logger.info("Bot is now polling for updates...")
+        
+        # Keep bot running
+        while self.is_running:
+            await asyncio.sleep(1)
+    
+    async def stop(self):
+        """Stop the bot gracefully"""
+        logger.info("Stopping bot...")
+        self.is_running = False
+        
+        if self.application:
+            await self.application.stop()
+            await self.application.shutdown()
+        
+        logger.info("Bot stopped successfully")
+
+def signal_handler(signum, frame):
+    """Handle shutdown signals"""
+    logger.info(f"Received signal {signum}, shutting down...")
+    sys.exit(0)
 
 def main():
     """Main function to run the bot"""
+    # Set up signal handlers
+    signal.signal(signal.SIGINT, signal_handler)
+    signal.signal(signal.SIGTERM, signal_handler)
+    
     try:
         logger.info("Starting Telegram Bot...")
         bot = AdvancedTelegramBot()
         
-        # Run bot with asyncio
-        asyncio.run(bot.run())
+        # Run bot
+        asyncio.run(bot.start_polling())
+        
     except KeyboardInterrupt:
         logger.info("Bot stopped by user")
     except Exception as e:
-        logger.error(f"Fatal error: {e}")
+        logger.error(f"Fatal error: {e}", exc_info=True)
         sys.exit(1)
 
 if __name__ == '__main__':
