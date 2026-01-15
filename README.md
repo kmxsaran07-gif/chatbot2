@@ -4,59 +4,73 @@ A feature-rich Telegram bot with professional features, optimized for Render dep
 
 ## Features
 
-✅ **User Management**
-- User banning/unbanning
-- User profile viewing
-- Total user statistics
-- Activity logs
+✅ Custom Welcome Message
+✅ Sticker Support (Animated + Video)
+✅ User Ban/Unban System
+✅ User Profile Viewing
+✅ Total Users Count
+✅ Broadcast System
+✅ Database Backup
+✅ Admin Panel
+✅ Activity Logs
+✅ Error Handling
+✅ Media Support
 
-✅ **Sticker Support**
-- Save and collect stickers
-- Animated sticker support
-- Video sticker support
-- Personal sticker collection
+## Setup Instructions
 
-✅ **Admin Features**
-- Broadcast messages
-- Database backup
-- User information lookup
-- Advanced admin controls
-
-✅ **Professional Features**
-- Custom welcome messages
-- Timezone support
-- Error handling
-- Automatic backups
-- Activity logging
-
-## Deployment on Render
-
-### Prerequisites
-1. Telegram Bot Token from [@BotFather](https://t.me/botfather)
-2. Your Telegram User ID
-3. Render account (free tier available)
-
-### Step-by-Step Deployment
-
-1. **Create a new bot on Telegram:**
-   - Message [@BotFather](https://t.me/botfather)
+1. **Get Bot Token:**
+   - Message @BotFather on Telegram
    - Send `/newbot`
-   - Follow instructions to get your `BOT_TOKEN`
+   - Follow instructions
+   - Copy the bot token
 
-2. **Get your Telegram User ID:**
-   - Message [@userinfobot](https://t.me/userinfobot)
+2. **Get Your User ID:**
+   - Message @userinfobot on Telegram
+   - Send `/start`
    - Copy your user ID
 
-3. **Prepare the code:**
-   - Download all files
-   - Update `.env.example` with your credentials
-   - Rename `.env.example` to `.env`
+3. **Update Configuration:**
+   - Copy `.env.example` to `.env`
+   - Update with your bot token and user ID
 
-4. **Create GitHub Repository:**
-   ```bash
-   git init
-   git add .
-   git commit -m "Initial commit"
-   git branch -M main
-   git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPO.git
-   git push -u origin main
+4. **Deploy on Render:**
+   - Create new Web Service
+   - Connect GitHub repository
+   - Set environment variables
+   - Deploy
+
+## Environment Variables in Render
+
+Add these variables in Render dashboard:
+
+- `BOT_TOKEN`: Your bot token from @BotFather
+- `OWNER_ID`: Your Telegram user ID
+- `ADMIN_IDS`: Additional admin IDs (comma-separated)
+- `PORT`: 8443
+
+## Bot Commands
+
+### User Commands:
+- `/start` - Start the bot
+- `/help` - Show help
+- `/profile` - View profile
+- `/stats` - Your statistics
+- `/id` - Get your ID
+- `/mystickers` - Your saved stickers
+- `/ping` - Check if bot is alive
+
+### Admin Commands:
+- `/ban <id> <reason>` - Ban user
+- `/unban <id>` - Unban user
+- `/broadcast <msg>` - Send to all users
+- `/users` - Bot statistics
+- `/userinfo <id>` - User details
+- `/banned` - List banned users
+- `/backup` - Database backup
+
+## Support
+
+If you encounter issues:
+1. Check Render logs
+2. Verify environment variables
+3. Ensure bot token is correct
