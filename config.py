@@ -9,7 +9,11 @@ BOT_TOKEN = os.getenv('BOT_TOKEN', '8518539584:AAGmEzfHMzZZgsUIY6gk1VQZ-SOP2FFdf
 OWNER_ID = int(os.getenv('OWNER_ID', '8327651421'))
 
 # Admin IDs (comma-separated)
-ADMIN_IDS = list(map(int, os.getenv('ADMIN_IDS', '').split(','))) if os.getenv('ADMIN_IDS') else []
+admin_ids_str = os.getenv('ADMIN_IDS', '')
+if admin_ids_str:
+    ADMIN_IDS = list(map(int, filter(None, admin_ids_str.split(','))))
+else:
+    ADMIN_IDS = []
 ADMIN_IDS.append(OWNER_ID)  # Owner is always admin
 
 # Messages
@@ -21,7 +25,7 @@ WELCOME_MESSAGE = """
 📌 <b>Your Info:</b>
 ├ Username: {username}
 ├ ID: <code>{user_id}</code>
-└ Type: {'Bot' if is_bot else 'Human'}
+└ Type: {is_bot}
 
 🌟 <b>Features:</b>
 • Sticker Collection
@@ -58,7 +62,7 @@ TIMEZONE = 'Asia/Kolkata'
 
 # Webhook settings (for production)
 WEBHOOK_URL = os.getenv('WEBHOOK_URL', '')
-WEBHOOK_PORT = int(os.getenv('PORT', 8443))
+PORT = int(os.getenv('PORT', 8443))
 
 # Logging level
 LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO')
@@ -70,3 +74,6 @@ MAX_BACKUPS = 10
 # Broadcast settings
 MAX_BROADCAST_CHUNK = 30  # Users per second
 BROADCAST_DELAY = 1  # Seconds between chunks
+
+# Debug mode
+DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
